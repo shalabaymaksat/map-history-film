@@ -30,7 +30,7 @@ Work in this order and show the user the result of each stage before moving on.
 
 5. **Fonts.** Put a display font that covers the film's alphabet into `public/fonts/` and list it in `src/theme.ts` (`FONT_FILES`). Check coverage (e.g. Kazakh ә ғ қ ң ө ұ ү һ і) with fontTools before rendering.
 
-6. **Voice-over.** `ELEVENLABS_API_KEY=… ELEVENLABS_VOICE_ID=… python3 tools/tts_elevenlabs.py src/data/<topic>.vo.json` (default model `eleven_v4`, `VO_LANG=kk`, stability 0.65, similarity 1.0). Each scene stretches to `max(storyboard duration, voice + 1.2 s)` and its layer timings scale with it. Run `tools/check_vo.py <lang>` (Groq Whisper) and fix texts the voice mispronounces. Ask the user for the voice ID — a key without `voices_read` cannot list voices.
+6. **Voice-over.** `ELEVENLABS_API_KEY=… ELEVENLABS_VOICE_ID=… python3 tools/tts_elevenlabs.py src/data/<topic>.vo.json` (default model `eleven_v4`, `VO_LANG=kk`, stability 0.65, similarity 1.0). Each scene stretches to `max(storyboard duration, voice + 1.2 s)` and its layer timings scale with it. Run `tools/check_vo.py <lang>` (local Whisper large-v3 via mlx-whisper or faster-whisper) and fix texts the voice mispronounces. Ask the user for the voice ID — a key without `voices_read` cannot list voices.
 
 7. **Check, then render.** `npm run studio` to scrub; `python3 tools/storyboard.py` for 0.5 s frame sheets; look for labels that overlap, white text on light map without a dark plate, and empty strips at the frame edge. Then `npm run render` and `tools/finish.sh out/film.mp4 out/film_final.mp4` (−14 LUFS).
 

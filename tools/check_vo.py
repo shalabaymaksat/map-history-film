@@ -1,24 +1,39 @@
-"""Back-transcribe the voice-over with Groq Whisper to catch words the TTS voice mispronounced.
+"""Back-transcribe the voice-over with a local Whisper model to catch words the TTS voice mispronounced.
 
-  export GROQ_API_KEY=...
-  python3 tools/check_vo.py kk          # language code
+  pip install mlx-whisper          # Apple Silicon, or:
+  pip install faster-whisper       # any platform (CPU / CUDA)
+  python3 tools/check_vo.py kk     # language code
+
+Needs ffmpeg on PATH. Runs offline after the first model download. Model via env WHISPER_MODEL (default large-v3;
+large-v3-turbo is faster, a bit less accurate for low-resource languages).
 """
-import json, os, sys, urllib.request, uuid
+import json, os, sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-KEY = os.environ.get('GROQ_API_KEY') or sys.exit('set GROQ_API_KEY')
 lang = sys.argv[1] if len(sys.argv) > 1 else 'kk'
+name = os.environ.get('WHISPER_MODEL', 'large-v3')
+
+try:
+    import mlx_whisper
+
+    repo = f'mlx-community/whisper-{name}' + ('' if 'turbo' in name else '-mlx')
+
+    def transcribe(path):
+        return mlx_whisper.transcribe(str(path), path_or_hf_repo=repo, language=lang, temperature=0.0)['text']
+except ImportError:
+    try:
+        from faster_whisper import WhisperModel
+    except ImportError:
+        sys.exit('install mlx-whisper (Apple Silicon) or faster-whisper')
+    model = WhisperModel(name, device='auto', compute_type='auto')
+
+    def transcribe(path):
+        segments, _ = model.transcribe(str(path), language=lang, temperature=0.0)
+        return ' '.join(s.text for s in segments)
+
 for item in json.loads((ROOT / 'src/vo.json').read_text()):
     if not item.get('file'):
         continue
     f = ROOT / 'public' / item['file']
-    b = uuid.uuid4().hex
-    parts = [f'--{b}\r\nContent-Disposition: form-data; name="{k}"\r\n\r\n{v}\r\n'.encode()
-             for k, v in (('model', 'whisper-large-v3'), ('language', lang), ('temperature', '0'))]
-    parts.append(f'--{b}\r\nContent-Disposition: form-data; name="file"; filename="{f.name}"\r\nContent-Type: audio/mpeg\r\n\r\n'.encode()
-                 + f.read_bytes() + f'\r\n--{b}--\r\n'.encode())
-    req = urllib.request.Request('https://api.groq.com/openai/v1/audio/transcriptions', data=b''.join(parts),
-                                 headers={'Authorization': f'Bearer {KEY}', 'Content-Type': f'multipart/form-data; boundary={b}'})
-    heard = json.load(urllib.request.urlopen(req, timeout=120))['text'].strip()
-    print(f'{f.name}\n  script: {item["text"]}\n  heard : {heard}\n')
+    print(f'{f.name}\n  script: {item["text"]}\n  heard : {transcribe(f).strip()}\n', flush=True)

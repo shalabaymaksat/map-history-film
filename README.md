@@ -20,7 +20,7 @@ Voice-over and final render:
 ```bash
 export ELEVENLABS_API_KEY=...  ELEVENLABS_VOICE_ID=...          # your voice; model eleven_v4, Kazakh by default
 python3 tools/tts_elevenlabs.py src/data/aktaban.vo.json
-GROQ_API_KEY=... python3 tools/check_vo.py kk                   # optional: hear-back check
+python3 tools/check_vo.py kk                                     # optional: local Whisper hear-back check
 npm run render && tools/finish.sh out/film.mp4 out/film_final.mp4
 python3 tools/storyboard.py                                      # 0.5 s frame sheets per scene
 ```
