@@ -1,0 +1,19 @@
+{
+  "name": "map-history-film",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Johnny Harris-style animated map films with Remotion + d3: storyboard data in, narrated MP4 out.",
+  "license": "MIT",
+  "scripts": {
+    "studio": "remotion studio",
+    "render": "remotion render MapFilm out/film.mp4",
+    "promo": "remotion render Promo out/promo.mp4"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.537",
+    "d3": "7.9.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "remotion": "4.0.537"
+  }
+}

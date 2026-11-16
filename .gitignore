@@ -1,0 +1,11 @@
+node_modules/
+out/
+build/
+.env
+.DS_Store
+public/basemap.jpg
+public/basemap.json
+public/promo_clip.mp4
+public/vo/*.mp3
+public/fonts/*
+!public/fonts/README.md
